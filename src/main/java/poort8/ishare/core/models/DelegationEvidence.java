@@ -1,8 +1,8 @@
-package poort8.ishare.core;
+package poort8.ishare.core.models;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import javax.annotation.Nullable;
 import java.util.ArrayList;
-import com.fasterxml.jackson.annotation.JsonProperty;
 
 public class DelegationEvidence {
     @JsonProperty("notBefore")
@@ -60,7 +60,6 @@ public class DelegationEvidence {
     }
 
     public static class PolicySet {
-
         @JsonProperty("maxDelegationDepth")
         public int MaxDelegationDepth;
         @JsonProperty("target")
