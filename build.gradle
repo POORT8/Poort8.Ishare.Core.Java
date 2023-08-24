@@ -33,7 +33,7 @@ test {
 // Build with dependencies included
 tasks.register('FatJar', Jar) {
     manifest {
-        attributes 'Main-Class': 'poort8.ishare.core.Authorisation'
+        attributes 'Main-Class': 'poort8.ishare.core.Authorization'
     }
     archiveBaseName = 'Poort8.Ishare.Core.Java-FatJar'
     duplicatesStrategy = DuplicatesStrategy.EXCLUDE

@@ -21,14 +21,14 @@ import java.util.stream.Collectors;
 import poort8.ishare.core.models.DelegationEvidence;
 import poort8.ishare.core.models.TokenResponse;
 
-public class Authorisation {
+public class Authorization {
 
     private static final String Purpose = "ISHARE";
 
-    public static String GetAccessToken(String partyId) {
-        String url = GetConfig("ApiUrl") + "/connect/token";
+    public static String GetAccessToken() {
+        String url = GetConfig("AuthorizationRegistryUrl") + "/connect/token";
 
-        String clientAssertion = CreateClientAssertion(partyId);
+        String clientAssertion = CreateClientAssertion();
 
         HashMap<String, String> parameters = new HashMap<>();
         parameters.put("grant_type", "client_credentials");
@@ -54,7 +54,7 @@ public class Authorisation {
             response = client.send(request, HttpResponse.BodyHandlers.ofString());
 
             if (response.statusCode() != 200) {
-                System.out.printf("Could not get access token from %s%n", partyId);
+                System.out.println("Could not get access token from Authorization Registry");
                 throw new RuntimeException();
             }
         } catch (IOException | InterruptedException e) {
@@ -71,15 +71,15 @@ public class Authorisation {
 
         if (tokenResponse == null) {
             System.out.println("Could not get access token from API response");
-            return "";
+            throw new RuntimeException();
         } else {
-            System.out.printf("Received token from party %s%n", partyId);
+            System.out.println("Received token from Authorization Registry");
             return tokenResponse.AccessToken;
         }
     }
 
     public static String GetDelegationEvidence(String accessToken, String subject, String resourceType, String resourceIdentifier, String action) {
-        String url = GetConfig("ApiUrl") + "/delegation";
+        String url = GetConfig("AuthorizationRegistryUrl") + "/delegation";
 
         HttpClient client = HttpClient.newHttpClient();
         HttpRequest request = HttpRequest.newBuilder()
@@ -179,13 +179,13 @@ public class Authorisation {
         return rootEffect.equalsIgnoreCase("Permit");
     }
 
-    private static String CreateClientAssertion(String audience) {
+    private static String CreateClientAssertion() {
         RSAPrivateKey signingKey = GetSigningKey();
 
         String[] certificateChain = {GetConfig("Certificate")};
         var jwt = Jwts.builder()
                 .setIssuer(GetConfig("ClientId"))
-                .setAudience(audience)
+                .setAudience(GetConfig("AuthorizationRegistryId"))
                 .claim("sub", GetConfig("ClientId"))
                 .claim("jti", UUID.randomUUID().toString())
                 .setNotBefore(new Date(System.currentTimeMillis()))
