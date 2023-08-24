@@ -1,6 +1,5 @@
 package poort8.ishare.core;
 
-import com.auth0.jwt.JWT;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -79,14 +78,14 @@ public class Authorisation {
         }
     }
 
-    public static String GetDelegationEvidence(String accessToken, String userId, String dataSource, String resourceIdentifier, String action) {
+    public static String GetDelegationEvidence(String accessToken, String subject, String resourceType, String resourceIdentifier, String action) {
         String url = GetConfig("ApiUrl") + "/delegation";
 
         HttpClient client = HttpClient.newHttpClient();
         HttpRequest request = HttpRequest.newBuilder()
                 .uri(URI.create(url))
                 .headers("Authorization", "Bearer " + accessToken)
-                .POST(HttpRequest.BodyPublishers.ofString(GetDelegationMaskRequest(userId, dataSource, resourceIdentifier, action).toString()))
+                .POST(HttpRequest.BodyPublishers.ofString(GetDelegationMaskRequest(subject, resourceType, resourceIdentifier, action).toString()))
                 .build();
         HttpResponse<?> response;
 
@@ -113,9 +112,7 @@ public class Authorisation {
     }
 
     @SuppressWarnings("ConstantConditions")
-    public static boolean VerifyAccess(String delegationToken, String action, String issuer, String subject, String resourceType, String resourceIdentifier) {
-        var jwtToken = JWT.decode(delegationToken);
-
+    public static boolean VerifyAccess(String delegationToken, String issuer, String subject, String resourceType, String resourceIdentifier, String action) {
         DelegationEvidence delegationEvidence;
         try {
             String[] chunks = delegationToken.split("\\.");
@@ -226,7 +223,7 @@ public class Authorisation {
         return privateRsaKey;
     }
 
-    private static ObjectNode GetDelegationMaskRequest(String userId, String dataSource, String resourceIdentifier, String action) {
+    private static ObjectNode GetDelegationMaskRequest(String subject, String resourceType, String resourceIdentifier, String action) {
         ObjectMapper mapper = new ObjectMapper();
         ObjectNode rootNode = mapper.createObjectNode();
 
@@ -234,7 +231,7 @@ public class Authorisation {
         delegationRequest.put("policyIssuer", GetConfig("ClientId"));
 
         ObjectNode delegationRequestTarget = mapper.createObjectNode();
-        delegationRequestTarget.put("accessSubject", userId);
+        delegationRequestTarget.put("accessSubject", subject);
         delegationRequest.set("target", delegationRequestTarget);
 
         ArrayNode policySets = mapper.createArrayNode();
@@ -245,7 +242,7 @@ public class Authorisation {
         ObjectNode policiesTarget = mapper.createObjectNode();
 
         ObjectNode resource = mapper.createObjectNode();
-        resource.put("type", dataSource);
+        resource.put("type", resourceType);
         ArrayNode identifiers = mapper.createArrayNode();
         identifiers.add(resourceIdentifier);
         resource.set("identifiers", identifiers);
