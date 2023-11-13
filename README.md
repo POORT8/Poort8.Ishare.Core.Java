@@ -1,5 +1,6 @@
 # Poort8.Ishare.Core.Java
 This library contains core iSHARE functionality in Java to interact with an Authorization Registry.
+
 _Disclaimer: this library is meant for prototyping only, it is not suitable for production purposes._
 
 ### Configuration
